@@ -9,7 +9,7 @@
 import Foundation
 
 struct WeatherManager {
-    let weatherUrl = "https://api.openweathermap.org/data/2.5/weather?&appid=239c87356ebd9a6612480d022a76d044"
+    let weatherUrl = "https://api.openweathermap.org/data/2.5/weather?&appid=239c87356ebd9a6612480d022a76d044&units=metric"
     
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherUrl)&q=\(cityName)"
@@ -20,20 +20,27 @@ struct WeatherManager {
     func performRequest(urlString: String) {
         guard let url = URL(string: urlString) else { return }
         let session = URLSession(configuration: .default)
-        let task = session.dataTask(with: url, completionHandler: handle(data: response: error:))
+        let task = session.dataTask(with: url) { data, response, error in
+            if error != nil {
+                print(error!)
+                return
+            }
+            
+            if let safeData = data {
+                self.parseJson(weatherData: safeData)
+            }
+        }
         task.resume()
     }
     
-    func handle(data: Data?, response: URLResponse?, error: Error?) {
-        if error != nil {
-            print(error!)
-            return
+    func parseJson(weatherData: Data) {
+        let decoder = JSONDecoder()
+        do {
+            let decodedData = try decoder.decode(WeatherData.self, from: weatherData)
+            print(decodedData.weather[0].description)
+        } catch {
+            print(error)
         }
-        
-        if let safeData = data {
-            let dataString = String(data: safeData, encoding: .utf8)
-            print(dataString!)
-        }
-        
     }
+    
 }
