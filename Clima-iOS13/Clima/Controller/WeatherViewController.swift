@@ -33,7 +33,6 @@ class WeatherViewController: UIViewController {
  
 extension WeatherViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print(searchTextField.text ?? "")
         searchTextField.endEditing(true)
         return true
     }
@@ -50,7 +49,7 @@ extension WeatherViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         
         guard let city = searchTextField.text else { return }
-        WeatherManager().fetchWeather(cityName: city)
+        weatherManager.fetchWeather(cityName: city)
         
         cityNameLabel.text = city
         
@@ -64,8 +63,10 @@ extension WeatherViewController: WeatherManagerDelegate {
     }
     
     func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel) {
-        cityNameLabel.text = weather.cityName
-        temperatureLabel.text = weather.temperatureString
-        conditionImageView.image = UIImage(named: weather.conditionName)
+        DispatchQueue.main.async {
+            self.cityNameLabel.text = weather.cityName
+            self.temperatureLabel.text = weather.temperatureString
+            self.conditionImageView.image = UIImage(systemName: weather.conditionName)
+        }
     }
 }
